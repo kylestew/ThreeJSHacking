@@ -304,17 +304,27 @@ var stars = [];
     if (!model)
       return;
 
+    // rotation tied to audio volume
     var rotation = fgRotation;
-    rotation += audioSource.volume > 10000 ? Math.sin(audioSource.volume/5500) : 0;
+    rotation += audioSource.volume > 10000 ? Math.sin(audioSource.volume/4000) : 0;
     // console.log(rotation);
-
-    // console.log(audioSource.volume);
-    // console.log(audioSource.streamData.length);
-
     // process sound here
     model.rotation.x = rotation;
     model.rotation.y = rotation;
 
-    // model.scale.x = 1.0 + rotation;
+    // scale tied to FFT output across spectrum
+    // console.log(audioSource.volume);
+    // var bucket = Math.ceil(audioSource.streamData.length/tiles.length*this.num);
+    var high = audioSource.streamData[Math.ceil(audioSource.streamData.length*(4.0/7.0))];
+    var mid = audioSource.streamData[Math.ceil(audioSource.streamData.length*(2.5/7.0))];
+    var low = audioSource.streamData[Math.ceil(audioSource.streamData.length*(1.0/7.0))];
+    high = Math.pow((high/255),2);
+    mid = Math.pow((mid/255),2);
+    low = Math.pow((low/255),2)*2;
+    console.log(low + ' :: ' + mid + ' :: ' + high);
+
+    model.scale.x = 1.0 + (low + mid + rotation) * 0.5;
+    model.scale.y = 1.0 + (low + mid + rotation) * 0.5;
+    model.scale.z = 1.0 + (low + mid + rotation) * 0.5;
   }
 };
