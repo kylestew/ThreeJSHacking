@@ -1,0 +1,42 @@
+<html>
+<head>
+	<title></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link type="text/css" rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="info">
+  </div>
+
+	<div id="info-top-left">Left / Right changes model | load your own SoundCloud song below</div>
+
+	<div id="visualizer"></div>
+
+  <div id="controlPanel" class="hidden">
+    <div id="tab"><a href="#" id="toggleButton"><i class="icon-menu"></i></a></div>
+    <div id="trackInfoPanel" class="hidden">
+        <img id="infoImage" src="">
+        <div id="infoArtist"></div>
+        <div id="infoTrack"></div>
+    </div>
+    <div id="playerControls">
+        <form id="form">
+            <input id="input" placeholder="Paste Soundcloud URL here (https://soundcloud.com/artist/track)">
+            <button type="submit" id="submit"><i class="icon-play"></i></button><br>
+        </form>
+        <audio id="player" controls="" autoplay="" preload autobuffer></audio>
+    </div>
+  </div>
+
+	<div id="messageBox" class="hidden">
+	</div>
+
+  <script src="js/three.min.js"></script>
+  <script src="js/OBJLoader.js"></script>
+  <script src="http://connect.soundcloud.com/sdk.js"></script>
+  <script src="matter_viz.js"></script>
+  <script src="sound_cloud.js"></script>
+</body>
+</html>
