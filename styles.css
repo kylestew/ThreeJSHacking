@@ -9,6 +9,16 @@
 	font-weight: normal;
 	font-style: normal;
 }
+#info-top-left {
+	color: #fff;
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 100%;
+	text-align: left;
+	z-index: 100;
+	display:block;
+}
 
 [class^="icon-"], [class*=" icon-"] {
 	font-family: 'icomoon';

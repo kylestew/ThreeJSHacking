@@ -265,6 +265,8 @@ window.onload = function init() {
     if (window.location.hash) {
         var trackUrl = 'https://soundcloud.com/' + window.location.hash.substr(1);
         loadAndUpdate(trackUrl);
+    } else {
+      loadAndUpdate('https://soundcloud.com/ninja-tune-xx/two-fingers-fools');
     }
 
     // handle the form submit event to load the new URL
@@ -281,6 +283,10 @@ window.onload = function init() {
 
     window.addEventListener("keydown", keyControls, false);
 
+    var models = [ 'cube.obj', 'bucky.obj', 'sputnik.obj', 'metaball.obj', 'bearing.obj', 'rectangle_spiral.obj' ];
+    var modelIndex = 1;
+    visualizer.reloadModel(models[modelIndex]);
+
     function keyControls(e) {
         switch(e.keyCode) {
             case 32:
@@ -289,11 +295,19 @@ window.onload = function init() {
                 break;
             case 37:
                 // left key pressed
-                loader.directStream('backward');
+                modelIndex--;
+                if (modelIndex < 0)
+                  modelIndex = models.length - 1;
+                visualizer.reloadModel(models[modelIndex]);
+
                 break;
             case 39:
                 // right key pressed
-                loader.directStream('forward');
+                modelIndex++;
+                if (modelIndex >= models.length)
+                  modelIndex = 0;
+                visualizer.reloadModel(models[modelIndex]);
+
                 break;
         }
     }
