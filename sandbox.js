@@ -1,156 +1,81 @@
-    var container;
+var container = document.getElementById( 'container' );
+var scene, camera, renderer;
+var mesh;
+var controls;
 
-    var camera, scene, renderer, effect;
-    var spheres = [];
+var params = {
+  flatShading: true,
+  radius: 1,
+  widthSegments: 12,
+  heightSegments: 12
+};
 
-    var directionalLight, pointLight;
+init();
+render();
 
-    var mouseX = 0, mouseY = 0;
+function init() {
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0xcccccc, 0.002);
 
-    var windowHalfX = window.innerWidth / 2;
-    var windowHalfY = window.innerHeight / 2;
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 5;
+  // camera.target = new THREE.Vector3();
 
-    init();
-    animate();
+  // lighting
+	light = new THREE.DirectionalLight( 0xffffff );
+	light.position.set( 1, 1, 1 );
+	scene.add( light );
 
-    function init() {
-      container = document.createElement('div');
-      document.body.appendChild(container);
+	light = new THREE.DirectionalLight( 0x002288 );
+	light.position.set( -1, -1, -1 );
+	scene.add( light );
 
-      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 100000);
-      camera.position.z = 3200;
+	light = new THREE.AmbientLight( 0x222222 );
+	scene.add( light );
 
-      // scene
-      scene = new THREE.Scene();
+  // render object
+  var geometry = new THREE.SphereGeometry(params.radius, params.widthSegments, params.heightSegments);
+  var material = new THREE.MeshLambertMaterial( { color:0xffffff, shading: THREE.FlatShading } );
+  mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
 
-      var geometry = new THREE.SphereGeometry(100, 32, 16);
+  // orbit controls
+  controls = new THREE.OrbitControls(camera);
+  controls.damping = 0.2;
+  controls.addEventListener('change', render);
 
-      var path = "textures/cube/pisa/";
-      var format = '.png';
-      var urls = [
-        path + 'px' + format, path + 'nx' + format,
-        path + 'py' + format, path + 'ny' + format,
-        path + 'pz' + format, path + 'nz' + format
-      ];
-      var textureCube = THREE.ImageUtils.loadTextureCube( urls );
-      var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube } );
+  renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer.setClearColor(0x22222233);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
 
-      // all those spehers!?
-      for ( var i = 0; i < 500; i ++ ) {
-        var mesh = new THREE.Mesh( geometry, material );
+  var gui = new dat.GUI();
+  gui.add(params, 'flatShading').name('Flat Shading').onFinishChange(function(newValue) {
+    if (true)
+      mesh.material = new THREE.MeshLambertMaterial( { color:0xffffff, shading: THREE.FlatShading } );
+    else
+      mesh.material = new THREE.MeshLambertMaterial( { color:0xffffff } );
+  });
+  gui.add(params, 'widthSegments').name('Width Segments').onFinishChange(function(newValue) {
+  });
+  gui.open();
 
-        mesh.position.x = Math.random() * 10000 - 5000;
-        mesh.position.y = Math.random() * 10000 - 5000;
-        mesh.position.z = Math.random() * 10000 - 5000;
+  window.addEventListener( 'resize', onWindowResize, false );
+}
 
-        mesh.scale.x = mesh.scale.y = mesh.scale.z = Math.random() * 3 + 1;
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	render();
+}
 
-        scene.add( mesh );
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+}
 
-        spheres.push( mesh );
-      }
-
-      // Skybox
-    	var shader = THREE.ShaderLib[ "cube" ];
-    	shader.uniforms[ "tCube" ].value = textureCube;
-
-  		var material = new THREE.ShaderMaterial( {
-
-  			fragmentShader: shader.fragmentShader,
-  			vertexShader: shader.vertexShader,
-  			uniforms: shader.uniforms,
-  			side: THREE.BackSide
-
-  		} ),
-  		mesh = new THREE.Mesh( new THREE.BoxGeometry( 100000, 100000, 100000 ), material );
-  		scene.add( mesh );
-
-
-      // var ambient = new THREE.AmbientLight(0x101030);
-      // scene.add(ambient);
-      //
-      // var directionalLight = new THREE.DirectionalLight(0xffeedd);
-      // directionalLight.position.set(0, 0, 10);
-      // scene.add(directionalLight);
-
-      // loader methods
-      var onProgress = function ( xhr ) {
-              if ( xhr.lengthComputable ) {
-                var percentComplete = xhr.loaded / xhr.total * 100;
-                console.log( Math.round(percentComplete, 2) + '% downloaded' );
-              }
-      };
-      var onError = function(xhr) {
-        debugger;
-      };
-      var manager = new THREE.LoadingManager();
-      manager.onProgress = function ( item, loaded, total ) {
-        console.log( item, loaded, total );
-      };
-
-      // texture
-      var texture = new THREE.Texture();
-      var loader = new THREE.ImageLoader( manager );
-        loader.load( 'textures/UV_Grid_Sm.jpg', function ( image ) {
-
-        texture.image = image;
-        texture.needsUpdate = true;
-      });
-
-      // model
-      var loader = new THREE.OBJLoader(manager);
-      loader.load('obj/cube.obj', function(object) {
-        // object.traverse( function ( child ) {
-          // if ( child instanceof THREE.Mesh ) {
-            // child.material.map = material;
-          // }
-        // });
-
-  // object.scale = new THREE.Vector3(10, 10, 10);
-        // object.position.y = -80;
-        scene.add(object);
-      }, onProgress, onError);
-
-      renderer = new THREE.WebGLRenderer();
-      renderer.setPixelRatio( window.devicePixelRatio );
-    //   renderer.setSize( window.innerWidth, window.innerHeight );
-      container.appendChild( renderer.domElement );
-
-      var width = window.innerWidth || 2;
-      var height = window.innerHeight || 2;
-
-      effect = new THREE.AnaglyphEffect( renderer );
-      effect.setSize( width, height );
-
-      document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-      window.addEventListener( 'resize', onWindowResize, false );
-    }
-
-    function onWindowResize() {
-      windowHalfX = window.innerWidth / 2;
-      windowHalfY = window.innerHeight / 2;
-
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-
-      effect.setSize( window.innerWidth, window.innerHeight );
-    }
-
-    function onDocumentMouseMove( event ) {
-      mouseX = ( event.clientX - windowHalfX ) * 10;
-      mouseY = ( event.clientY - windowHalfY ) * 10;
-    }
-
-    function animate() {
-      requestAnimationFrame( animate );
-      render();
-    }
-
-    function render() {
-      camera.position.x += ( mouseX - camera.position.x ) * .05;
-      camera.position.y += ( - mouseY - camera.position.y ) * .05;
-
-      camera.lookAt( scene.position );
-
-      effect.render( scene, camera );
-    }
+function render() {
+  renderer.render(scene, camera);
+}
